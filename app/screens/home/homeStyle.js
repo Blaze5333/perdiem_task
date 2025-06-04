@@ -11,6 +11,46 @@ export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: StatusBar.currentHeight || 0, // Adjust for status bar height
+  },
+  
+  // Store status styles
+  openIcon: {
+    backgroundColor: '#4CAF50', // Green
+  },
+  closedIcon: {
+    backgroundColor: '#F44336', // Red
+  },
+  loadingDot: {
+    backgroundColor: '#FFC107', // Yellow/amber for loading state
+  },
+  storeStatusText: {
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  openText: {
+    color: '#4CAF50', // Green
+  },
+  closedText: {
+    color: '#F44336', // Red
+  },
+
+  // Next opening info styles
+  nextOpeningContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(244, 67, 54, 0.2)', // Light red border
+  },
+  nextOpeningText: {
+    fontSize: 14,
+    color: colors.gray700,
+    fontWeight: '500',
+  },
+  nextOpeningTzText: {
+    fontSize: 12,
+    color: colors.gray500,
+    marginTop: 2,
   },
 
   // Home Screen Styles
@@ -141,6 +181,7 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
+    marginHorizontal: 12,
   },
   appointmentContent: {
     flexDirection: 'row',
@@ -287,10 +328,36 @@ export const homeStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  timeSlotContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
   timeSlotText: {
     fontSize: 14,
     fontWeight: '500',
     color: colors.gray700,
+  },
+  selectedTimeSlot: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  selectedTimeSlotText: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  closedTimeSlot: {
+    borderColor: colors.gray200,
+    backgroundColor: colors.gray50,
+  },
+  closedTimeSlotText: {
+    color: colors.gray400,
   },
   profileImage:{height:40,width:40,borderRadius:20}
 })

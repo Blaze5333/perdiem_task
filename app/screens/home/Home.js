@@ -1,65 +1,110 @@
 /*eslint-disable*/
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
   SafeAreaView,
+  ScrollView,
   Animated,
   Dimensions,
-  StatusBar,
-  Image
 } from 'react-native';
 import { homeStyles } from './homeStyle';
-import { colors } from '../../constants/colors';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import moment from 'moment-timezone';
+import { findNextStoreOpening } from '../../utils/dateTimeUtils';
+import { processBusinessHours } from '../../utils/getTimeZoneHours';
 
-const { width, height } = Dimensions.get('window');
+// Import components
+import HomeHeader from '../../components/HomeHeader';
+import GreetingCard from '../../components/GreetingCard';
+import DateTimeSelector from '../../components/DateTimeSelector';
+import ModalContainer from '../../components/ModalContainer';
+import DatePickerModal from '../../components/DatePickerModal';
+import TimePickerModal from '../../components/TimePickerModal';
+import StoreStatusCard from '../../components/StoreStatusCard';
+import AnimatedTimezoneToggle from '../../components/AnimatedTimezoneToggle';
 
-// Color palette
+// Import API services
+import { fetchAllStoreData } from '../../services/api/storeService';
 
+const { height } = Dimensions.get('window');
 
-const animationConfig = {
-  spring: {
-    tension: 100,
-    friction: 8,
-  },
-};
-
-const HomeScreen = ({ onLogout }) => {
+/**
+ * Home Screen Component
+ * Main screen for displaying store hours and allowing users to check appointment availability
+ */
+const HomeScreen = () => {
+  // User state from Redux
+  const name = useSelector((state) => state.user.name);
+  const photo = useSelector((state) => state.user.photo);
+  
+  // Navigation
+  const navigation = useNavigation();
+  
+  // Timezone state
   const [selectedTimezone, setSelectedTimezone] = useState('NYC');
+  
+  // Date and time selection
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  
+  // Modal visibility state
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  
+  // Store status and time state
   const [storeStatus, setStoreStatus] = useState('open');
   const [currentTime, setCurrentTime] = useState(new Date());
- const email=useSelector((state) => state.user.email);
- const name=useSelector((state) => state.user.name);
-  const photo=useSelector((state) => state.user.photo);
-  const dispatch = useDispatch();
-  const navigation = useNavigation();
-  // Animation values
+  
+  // Animation references
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(height)).current;
   const toggleAnim = useRef(new Animated.Value(0)).current;
 
-  // Mock store hours
-  const storeHours = {
-    monday: [{ open: '09:00', close: '18:00' }],
-    tuesday: [{ open: '09:00', close: '18:00' }],
-    wednesday: [{ open: '09:00', close: '18:00' }],
-    thursday: [{ open: '09:00', close: '18:00' }],
-    friday: [{ open: '09:00', close: '20:00' }],
-    saturday: [{ open: '10:00', close: '20:00' }],
-    sunday: [{ open: '11:00', close: '17:00' }]
+  // Store data state
+  const [storeHours, setStoreHours] = useState([]);
+  const [storeOverrides, setStoreOverrides] = useState([]);
+  const [localTimezoneHours, setLocalTimezoneHours] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Animation config
+  const animationConfig = {
+    spring: {
+      tension: 100,
+      friction: 8,
+    },
   };
 
+  /**
+   * Fetch store hours and overrides from API
+   */
   useEffect(() => {
-    // Update time every minute
+    const fetchStoreData = async () => {
+      setLoading(true);
+      try {
+        // Use the storeService to fetch store data
+        const { storeHours: hours, storeOverrides: overrides } = await fetchAllStoreData();
+        
+        // Process hours for local timezone
+        const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+        const localTimeZoneHours = processBusinessHours(hours, userTimezone);
+        
+        setStoreHours(hours || []); 
+        setStoreOverrides(overrides || []);
+        setLocalTimezoneHours(localTimeZoneHours || []); 
+      } catch (error) {
+        console.error('Error fetching store data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStoreData();
+  }, []);
+
+  /**
+   * Update time every minute
+   */
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
@@ -67,69 +112,186 @@ const HomeScreen = ({ onLogout }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Timezone toggle animation
+  /**
+   * Handle timezone change
+   */
   useEffect(() => {
+    // Animate toggle switch
     Animated.timing(toggleAnim, {
       toValue: selectedTimezone === 'NYC' ? 0 : 1,
       duration: 200,
       useNativeDriver: false,
     }).start();
-  }, [selectedTimezone]);
+    
+    // Reset selections when timezone changes
+    setSelectedDate(null);
+    setSelectedTime(null);
+    
+    // Re-process hours for the new timezone
+    if (storeHours && storeHours.length > 0) {
+      const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+      const processedHours = processBusinessHours(storeHours, userTimezone);
+      setLocalTimezoneHours(processedHours || []);
+    }
+  }, [selectedTimezone, storeHours]);
 
-  // Generate next 30 days
+  /**
+   * Update store status when date or time changes
+   */
+  useEffect(() => {
+    if (selectedDate && selectedTime) {
+      const isOpen = checkStoreStatus(selectedDate, selectedTime);
+      setStoreStatus(isOpen ? 'open' : 'closed');
+    }
+  }, [selectedDate, selectedTime, storeHours, storeOverrides]);
+
+  /**
+   * Check if the store is open at the selected date and time
+   */
+  const checkStoreStatus = (date, time) => {
+    if (!date || !time || storeHours.length === 0) return false;
+    
+    // Convert user's selected date/time to NYC timezone for comparison
+    const userTz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+    const nycTz = 'America/New_York';
+    
+    // Create moment object in user's timezone
+    const userDateTime = moment.tz(date, userTz).set({
+      hour: parseInt(time.split(':')[0], 10),
+      minute: parseInt(time.split(':')[1], 10),
+      second: 0
+    });
+    
+    // Convert to NYC time for store hours comparison
+    const nycDateTime = userDateTime.clone().tz(nycTz);
+    
+    // Get NYC date components
+    const dayOfWeek = nycDateTime.isoWeekday();
+    const day = nycDateTime.date();
+    const month = nycDateTime.month() + 1;
+    const nycTime = nycDateTime.format('HH:mm');
+    
+    // Check for overrides first (higher priority)
+    const override = storeOverrides?.find(
+      o => o.day === day && o.month === month
+    );
+    
+    // If there's an override and the store is closed, return false
+    if (override) {
+      if (!override.is_open) return false;
+      return isTimeWithinRange(nycTime, override.start_time, override.end_time);
+    }
+    
+    // Use regular hours if no overrides
+    const regularHours = storeHours?.find(
+      h => h.day_of_week === dayOfWeek && h.is_open
+    );
+    
+    // Store is closed on this day
+    if (!regularHours) {
+      return false;
+    }
+    
+    return isTimeWithinRange(nycTime, regularHours.start_time, regularHours.end_time);
+  };
+  
+  /**
+   * Check if a time is within a range
+   */
+  const isTimeWithinRange = (time, startTime, endTime) => {
+    if (!startTime || !endTime) return false;
+    
+    const [hour, minute] = time.split(':').map(Number);
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    
+    // Convert to minutes for easier comparison
+    const timeMinutes = hour * 60 + minute;
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    
+    return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
+  };
+  
+  /**
+   * Generate dates for date picker
+   */
   const generateDates = () => {
     const dates = [];
+    const tz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+    
     for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
+      const date = moment().tz(tz).add(i, 'days').toDate();
       dates.push(date);
     }
+    
     return dates;
   };
-
-  // Generate time slots
+  
+  /**
+   * Generate time slots for the selected date
+   */
   const generateTimeSlots = (date) => {
     if (!date) return [];
     
     const slots = [];
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const dayHours = storeHours[dayName] || [];
+    const tz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+    const momentDate = moment(date).tz(tz);
     
-    dayHours.forEach(period => {
-      const [openHour, openMin] = period.open.split(':').map(Number);
-      const [closeHour, closeMin] = period.close.split(':').map(Number);
-      
-      let currentSlot = new Date(date);
-      currentSlot.setHours(openHour, openMin, 0, 0);
-      
-      const endTime = new Date(date);
-      endTime.setHours(closeHour, closeMin, 0, 0);
-      
-      while (currentSlot < endTime) {
-        slots.push(new Date(currentSlot));
-        currentSlot.setMinutes(currentSlot.getMinutes() + 15);
+    // Get day of week
+    const dayOfWeek = momentDate.isoWeekday();
+    
+    // Find store hours for this day in the user's local timezone
+    const localHours = localTimezoneHours.filter(
+      h => h.day_of_week === dayOfWeek
+    );
+    
+    // Generate all slots for the day (every 30 minutes)
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute of [0, 30]) {
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const current = momentDate.clone().hour(hour).minute(minute).second(0);
+        
+        // Check if this time slot is within store hours
+        const isOpen = isTimeSlotOpen(timeString, localHours);
+        
+        slots.push({
+          time: timeString,
+          dateTime: current.toDate(),
+          formattedTime: current.format('h:mm A'),
+          isOpen: isOpen
+        });
       }
-    });
+    }
     
     return slots;
   };
-
-  // Get greeting message
-  const getGreeting = () => {
-    const hour = currentTime.getHours();
-    let timeGreeting = '';
+  
+  /**
+   * Check if a time slot is within store hours
+   */
+  const isTimeSlotOpen = (timeString, hoursForDay) => {
+    if (!hoursForDay || hoursForDay.length === 0) return false;
     
-    if (hour >= 5 && hour <= 9) timeGreeting = 'Good Morning';
-    else if (hour >= 10 && hour <= 11) timeGreeting = 'Late Morning Vibes!';
-    else if (hour >= 12 && hour <= 16) timeGreeting = 'Good Afternoon';
-    else if (hour >= 17 && hour <= 20) timeGreeting = 'Good Evening';
-    else timeGreeting = 'Night Owl';
+    // Convert time string to minutes for comparison
+    const [hour, minute] = timeString.split(':').map(Number);
+    const timeInMinutes = hour * 60 + minute;
     
-    const location = selectedTimezone === 'NYC' ? 'NYC' : 'Kolkata';
-    return `${timeGreeting}, ${location}!`;
+    // Check each hours range
+    return hoursForDay.some(range => {
+      const [startHour, startMinute] = range.start_time.split(':').map(Number);
+      const [endHour, endMinute] = range.end_time.split(':').map(Number);
+      
+      const startInMinutes = startHour * 60 + startMinute;
+      const endInMinutes = endHour * 60 + endMinute;
+      
+      return timeInMinutes >= startInMinutes && timeInMinutes <= endInMinutes;
+    });
   };
 
-  // Show modal with animation
+  /**
+   * Show modal with animation
+   */
   const showModal = (modalType) => {
     if (modalType === 'date') {
       setShowDatePicker(true);
@@ -151,7 +313,9 @@ const HomeScreen = ({ onLogout }) => {
     ]).start();
   };
 
-  // Hide modal with animation
+  /**
+   * Hide modal with animation
+   */
   const hideModal = (modalType) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -175,281 +339,95 @@ const HomeScreen = ({ onLogout }) => {
     });
   };
 
+  /**
+   * Get the next store opening time
+   */
+  const getNextStoreOpening = () => {
+    return findNextStoreOpening(
+      storeHours,
+      storeOverrides,
+      selectedTimezone
+    );
+  };
+
   return (
     <SafeAreaView style={homeStyles.container}>
-      <StatusBar style="dark" />
-      
-      {/* Header */}
-      <View style={homeStyles.header}>
-        <Text style={homeStyles.headerTitle}>Welcome Back,{name.split(" ")[0]}</Text>
-        <TouchableOpacity 
-          onPress={()=>{
-            navigation.navigate('Profile');
-          }}
-          style={homeStyles.logoutButton}
-        >
-         <Image source={photo ? { uri: photo } : require('../../assets/images/default-profile.png')} style={homeStyles.profileImage} />
-        </TouchableOpacity>
-      </View>
+      {/* Header Component */}
+      <HomeHeader 
+        name={name} 
+        photo={photo} 
+        onProfilePress={() => navigation.navigate('Profile')} 
+      />
 
       <ScrollView style={homeStyles.homeContent} showsVerticalScrollIndicator={false}>
-        {/* Timezone Toggle */}
-        <View style={homeStyles.card}>
-          <Text style={homeStyles.cardTitle}>Timezone</Text>
-          <View style={homeStyles.toggleContainer}>
-            <Animated.View 
-              style={[
-                homeStyles.toggleBackground,
-                {
-                  transform: [{
-                    translateX: toggleAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [2, (width - 64)/2]
-                    })
-                  }]
-                }
-              ]} 
-            />
-            <TouchableOpacity
-              style={[
-                homeStyles.toggleOption,
-                selectedTimezone === 'NYC' && homeStyles.toggleOptionActive
-              ]}
-              onPress={() => setSelectedTimezone('NYC')}
-              activeOpacity={0.8}
-            >
-              <Text style={homeStyles.toggleOptionText}>📍 NYC Time</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                homeStyles.toggleOption,
-                selectedTimezone === 'LOCAL' && homeStyles.toggleOptionActive
-              ]}
-              onPress={() => setSelectedTimezone('LOCAL')}
-              activeOpacity={0.8}
-            >
-              <Text style={homeStyles.toggleOptionText}>📍 Local Time</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Timezone Toggle Component */}
+        <AnimatedTimezoneToggle
+          selectedTimezone={selectedTimezone}
+          setSelectedTimezone={setSelectedTimezone}
+          toggleAnim={toggleAnim}
+        />
 
-        {/* Greeting & Store Status */}
-        <View style={homeStyles.card}>
-          <View style={homeStyles.greetingHeader}>
-            <View style={homeStyles.greetingContent}>
-              <Text style={homeStyles.greetingText}>{getGreeting()}</Text>
-              <Text style={homeStyles.timeText}>
-                {currentTime.toLocaleString('en-US', {
-                  timeZone: selectedTimezone === 'NYC' ? 'America/New_York' : 'Asia/Kolkata',
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit'
-                })}
-              </Text>
-            </View>
-            <View style={homeStyles.storeStatus}>
-              <View style={[
-                homeStyles.statusDot,
-                { backgroundColor: storeStatus === 'open' ? colors.success : colors.error }
-              ]} />
-              <Text style={homeStyles.statusText}>
-                {storeStatus === 'open' ? 'Open' : 'Closed'}
-              </Text>
-            </View>
-          </View>
-        </View>
+        {/* Greeting Card Component */}
+        <GreetingCard
+          selectedTimezone={selectedTimezone}
+          currentTime={currentTime}
+          isStoreOpen={checkStoreStatus(new Date(), moment().format('HH:mm'))}
+          loading={loading}
+        />
 
-        {/* Selected Appointment */}
+        {/* Store Status Component - shows only when date/time selected */}
         {selectedDate && selectedTime && (
-          <Animated.View 
-            style={[homeStyles.appointmentCard]}
-            entering="fadeInUp"
-          >
-            <View style={homeStyles.appointmentContent}>
-              <View style={homeStyles.appointmentIcon}>
-                <Text style={homeStyles.appointmentIconText}>✓</Text>
-              </View>
-              <View style={homeStyles.appointmentDetails}>
-                <Text style={homeStyles.appointmentTitle}>Appointment Booked</Text>
-                <Text style={homeStyles.appointmentTime}>
-                  {selectedDate.toLocaleDateString('en-US', { 
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric'
-                  })} at {selectedTime.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit'
-                  })}
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
+          <StoreStatusCard
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            storeStatus={storeStatus}
+            nextOpening={getNextStoreOpening()}
+          />
         )}
 
-        {/* Date Selection */}
-        <View style={homeStyles.card}>
-          <Text style={homeStyles.cardTitle}>Select Date & Time</Text>
-          <TouchableOpacity
-            style={homeStyles.dateButton}
-            onPress={() => showModal('date')}
-            activeOpacity={0.8}
-          >
-            <View style={homeStyles.dateButtonContent}>
-              <Text style={homeStyles.dateButtonIcon}>📅</Text>
-              <Text style={homeStyles.dateButtonText}>
-                {selectedDate 
-                  ? selectedDate.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })
-                  : 'Choose a date'
-                }
-              </Text>
-            </View>
-            <Text style={homeStyles.dateButtonArrow}>→</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Date Time Selection Component */}
+        <DateTimeSelector
+          selectedDate={selectedDate}
+          onPress={() => showModal('date')}
+        />
       </ScrollView>
 
       {/* Date Picker Modal */}
-      <Modal
+      <ModalContainer
         visible={showDatePicker}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => hideModal('date')}
+        onClose={() => hideModal('date')}
+        title="Select Date"
+        fadeAnim={fadeAnim}
+        slideAnim={slideAnim}
       >
-        <Animated.View 
-          style={[
-            homeStyles.modalOverlay,
-            { opacity: fadeAnim }
-          ]}
-        >
-          <TouchableOpacity 
-            style={homeStyles.modalOverlay}
-            onPress={() => hideModal('date')}
-            activeOpacity={1}
-          />
-          <Animated.View 
-            style={[
-              homeStyles.modalContent,
-              {
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
-          >
-            <View style={homeStyles.modalHeader}>
-              <Text style={homeStyles.modalTitle}>Select Date</Text>
-              <TouchableOpacity 
-                onPress={() => hideModal('date')}
-                style={homeStyles.closeButton}
-              >
-                <Text style={homeStyles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={homeStyles.modalScroll}>
-              {generateDates().map((date, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={homeStyles.dateItem}
-                  onPress={() => {
-                    setSelectedDate(date);
-                    hideModal('date');
-                    setTimeout(() => showModal('time'), 300);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={homeStyles.dateItemContent}>
-                    <Text style={homeStyles.dateItemText}>
-                      {date.toLocaleDateString('en-US', { 
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </Text>
-                    <Text style={homeStyles.dateItemLabel}>
-                      {index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : ''}
-                    </Text>
-                  </View>
-                  <Text style={homeStyles.dateItemArrow}>→</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
+        <DatePickerModal
+          dates={generateDates()}
+          onSelectDate={(date) => {
+            setSelectedDate(date);
+            hideModal('date');
+            setTimeout(() => showModal('time'), 300);
+          }}
+        />
+      </ModalContainer>
 
       {/* Time Picker Modal */}
-      <Modal
+      <ModalContainer
         visible={showTimePicker}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => hideModal('time')}
+        onClose={() => hideModal('time')}
+        title="Available Time Slots"
+        fadeAnim={fadeAnim}
+        slideAnim={slideAnim}
       >
-        <Animated.View 
-          style={[
-            homeStyles.modalOverlay,
-            { opacity: fadeAnim }
-          ]}
-        >
-          <TouchableOpacity 
-            style={homeStyles.modalOverlay}
-            onPress={() => hideModal('time')}
-            activeOpacity={1}
-          />
-          <Animated.View 
-            style={[
-              homeStyles.modalContent,
-              {
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
-          >
-            <View style={homeStyles.modalHeader}>
-              <Text style={homeStyles.modalTitle}>Available Time Slots</Text>
-              <TouchableOpacity 
-                onPress={() => hideModal('time')}
-                style={homeStyles.closeButton}
-              >
-                <Text style={homeStyles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            {selectedDate && (
-              <Text style={homeStyles.selectedDateText}>
-                {selectedDate.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </Text>
-            )}
-            <ScrollView style={homeStyles.modalScroll}>
-              <View style={homeStyles.timeSlotGrid}>
-                {generateTimeSlots(selectedDate).map((time, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={homeStyles.timeSlot}
-                    onPress={() => {
-                      setSelectedTime(time);
-                      hideModal('time');
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={homeStyles.timeSlotText}>
-                      {time.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                      })}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
+        <TimePickerModal
+          selectedDate={selectedDate}
+          timeSlots={generateTimeSlots(selectedDate)}
+          selectedTime={selectedTime}
+          onSelectTime={(time) => {
+            setSelectedTime(time);
+            hideModal('time');
+          }}
+        />
+      </ModalContainer>
     </SafeAreaView>
   );
 };
