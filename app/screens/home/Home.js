@@ -105,17 +105,7 @@ const HomeScreen = ({route}) => {
 
     return () => clearInterval(timer);
   }, []);
-// Helper function to combine date and time with timezone support
-function combineDateAndTime(dateObj, timeString, timezone) {
-  const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
-  const dateStr = moment(dateObj).format('YYYY-MM-DD');
-  return moment.tz(`${dateStr} ${timeString}`, 'YYYY-MM-DD HH:mm', tz);
-}
 
-
-  /**
-   * Handle timezone change
-   */
   useEffect(() => {
     // Animate toggle switch
     Animated.timing(toggleAnim, {
@@ -167,10 +157,6 @@ function combineDateAndTime(dateObj, timeString, timezone) {
     }
   }, [selectedTimezone, storeHours]);
 
-  /**
-   * Update store status when date or time changes
-   */
-  // Update store status when date or time changes
   useEffect(() => {
     if (selectedDate && selectedTime) {
       // Update store status
@@ -179,9 +165,6 @@ function combineDateAndTime(dateObj, timeString, timezone) {
     }
   }, [selectedDate, selectedTime, storeHours, storeOverrides]);
 
-  /**
-   * Check if the store is open at the selected date and time
-   */
   const checkStoreStatus = (date, time) => {
     if (!date || !time || storeHours.length === 0) return false;
     

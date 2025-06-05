@@ -111,8 +111,8 @@ app/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/per-diem-app.git
-cd per-diem-app
+git clone https://github.com/Blaze5333/perdiem_task.git
+cd perdiem_task
 ```
 
 2. Install dependencies:
@@ -208,4 +208,4 @@ The Home screen is the main interface of the app and includes several key compon
 
 ## Contact
 
-For any questions or support, please contact [your-email@example.com](mailto:your-email@example.com)
+For any questions or support, please contact [your-email@example.com](mailto:mustafachaiwala2003@gmail.com)
