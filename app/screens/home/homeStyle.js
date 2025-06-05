@@ -1,102 +1,103 @@
-/*eslint-disable*/
 import { StyleSheet, Dimensions, StatusBar } from 'react-native';
 import { colors } from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
-
-// Color palette for home styles
 
 
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: StatusBar.currentHeight || 0, // Adjust for status bar height
+    paddingTop: StatusBar.currentHeight || 0,
   },
   
-  // Store status styles
   openIcon: {
-    backgroundColor: '#4CAF50', // Green
+    backgroundColor: colors.open,
   },
   closedIcon: {
-    backgroundColor: '#F44336', // Red
+    backgroundColor: colors.closed,
   },
   loadingDot: {
-    backgroundColor: '#FFC107', // Yellow/amber for loading state
+    backgroundColor: colors.warning,
   },
   storeStatusText: {
-    fontWeight: 'bold',
-    marginTop: 4,
+    fontWeight: '700',
+    marginTop: 6,
+    letterSpacing: -0.2,
   },
   openText: {
-    color: '#4CAF50', // Green
+    color: colors.open,
   },
   closedText: {
-    color: '#F44336', // Red
+    color: colors.closed,
   },
 
-  // Next opening info styles
   nextOpeningContainer: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(244, 67, 54, 0.2)', // Light red border
+    borderTopColor: colors.gray200,
   },
   nextOpeningText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.gray700,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   nextOpeningTzText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.gray500,
-    marginTop: 2,
+    marginTop: 4,
+    fontWeight: '500',
   },
 
-  // Home Screen Styles
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.white,
     paddingHorizontal: 24,
-    paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    marginTop:StatusBar.currentHeight
+    paddingVertical: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    marginTop: StatusBar.currentHeight,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.gray900,
+    letterSpacing: -0.3,
   },
   logoutButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   logoutText: {
-    fontSize: 14,
-    color: colors.gray500,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary,
   },
   homeContent: {
     flex: 1,
-    // paddingHorizontal: 24,
     paddingTop: 24,
+    paddingBottom: 24,
+  },
+  contentContainer: {
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: colors.white,
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-    marginHorizontal: 12,
+    padding: 24,
+    marginBottom: 20,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    marginHorizontal: 16,
   },
   cardTitle: {
     fontSize: 14,
@@ -359,5 +360,11 @@ export const homeStyles = StyleSheet.create({
   closedTimeSlotText: {
     color: colors.gray400,
   },
-  profileImage:{height:40,width:40,borderRadius:20}
-})
+  profileImage: {
+    height: 44,
+    width: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: colors.primaryLight,
+  }
+});

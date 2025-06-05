@@ -52,7 +52,7 @@ const handleNotification = async remoteMessage => {
                 onPress: () => {
                   // Navigate to the appropriate screen
                   navigationRef.navigate('Home', {
-                    data: intent.payload.data,
+                    message: intent.payload.message,
                   });
                 },
               },

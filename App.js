@@ -20,9 +20,13 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import messaging from '@react-native-firebase/messaging';
 import { setupNotifications } from './app/services/firebase/notification';
+import { firebase } from '@react-native-firebase/auth';
 function App() {
   GoogleSignin.configure({
-    webClientId:"63655638444-tijb25e3vfm5fo0us9vpehvb72jq3os6.apps.googleusercontent.com"
+    webClientId:"63655638444-tijb25e3vfm5fo0us9vpehvb72jq3os6.apps.googleusercontent.com",
+    iosClientId:"63655638444-gi2u5klvahecf1870n4ai0s0nc809gij.apps.googleusercontent.com",
+    offlineAccess: true,
+    scopes: ['profile', 'email'],
   })
   const getFCMToken = async () => {
     try {
@@ -33,6 +37,7 @@ function App() {
     }
   }
   useEffect(() => {
+    
      const cleanup=setupNotifications()
      return cleanup
   }, []);

@@ -1,12 +1,7 @@
-/*eslint-disable*/
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 
-/**
- * DateTimeSelector component
- * Shows a date selection button and handles selections
- */
 const DateTimeSelector = ({ selectedDate, onPress }) => {
   return (
     <View style={styles.card}>
@@ -38,50 +33,60 @@ const DateTimeSelector = ({ selectedDate, onPress }) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 12,
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.gray900,
+    marginBottom: 16,
+    letterSpacing: -0.3,
+  },
+  dateButton: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 0,
+    borderRadius: 14,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.gray900,
-    marginBottom: 12,
-  },
-  dateButton: {
-    backgroundColor: colors.gray50,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   dateButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dateButtonIcon: {
-    fontSize: 18,
-    marginRight: 8,
+    fontSize: 20,
+    marginRight: 12,
   },
   dateButtonText: {
     fontSize: 16,
-    color: colors.gray800,
+    fontWeight: '600',
+    color: colors.primary,
   },
   dateButtonArrow: {
-    fontSize: 18,
-    color: colors.gray500,
+    fontSize: 20,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });
 

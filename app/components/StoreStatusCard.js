@@ -82,75 +82,90 @@ const StoreStatusCard = ({ selectedDate, selectedTime, storeStatus, nextOpening 
 
 const styles = StyleSheet.create({
   appointmentCard: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 2,
-    borderColor: colors.primary + '40',
+    backgroundColor: colors.white,
+    borderWidth: 0,
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
-    marginHorizontal: 12,
+    padding: 20,
+    marginBottom: 20,
+    marginHorizontal: 16,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   appointmentContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    alignItems: 'flex-start',
+    gap: 16,
   },
   appointmentIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   openIcon: {
-    backgroundColor: '#4CAF50', // Green
+    backgroundColor: colors.open,
   },
   closedIcon: {
-    backgroundColor: '#F44336', // Red
+    backgroundColor: colors.closed,
   },
   appointmentIconText: {
-    fontSize: 16,
+    fontSize: 22,
     color: colors.white,
+    fontWeight: '600',
   },
   appointmentDetails: {
     flex: 1,
   },
   appointmentTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 2,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.gray900,
+    marginBottom: 4,
+    letterSpacing: -0.3,
   },
   appointmentTime: {
-    fontSize: 14,
-    color: colors.primary,
-    opacity: 0.8,
-  },
-  storeStatusText: {
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  openText: {
-    color: '#4CAF50', // Green
-  },
-  closedText: {
-    color: '#F44336', // Red
-  },
-  nextOpeningContainer: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(244, 67, 54, 0.2)', // Light red border
-  },
-  nextOpeningText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.gray700,
     fontWeight: '500',
+    marginBottom: 8,
+  },
+  storeStatusText: {
+    fontWeight: '700',
+    marginTop: 4,
+    fontSize: 15,
+    letterSpacing: 0.2,
+  },
+  openText: {
+    color: colors.open,
+  },
+  closedText: {
+    color: colors.closed,
+  },
+  nextOpeningContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200,
+  },
+  nextOpeningText: {
+    fontSize: 15,
+    color: colors.gray700,
+    fontWeight: '600',
   },
   nextOpeningTzText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.gray500,
-    marginTop: 2,
+    marginTop: 4,
+    fontWeight: '500',
   },
 });
 

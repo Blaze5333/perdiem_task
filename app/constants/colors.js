@@ -1,12 +1,15 @@
-/*eslint-disable*/
 export const colors = {
-  primary: '#4F46E5', // Indigo
+  primary: '#6366F1',
+  primaryDark: '#4F46E5',
   primaryLight: '#EEF2FF',
   secondary: '#6B7280',
   success: '#10B981',
+  warning: '#F59E0B',
   error: '#EF4444',
-  background: '#F8FAFC',
+  background: '#F9FAFB',
+  surface: '#FFFFFF',
   white: '#FFFFFF',
+  black: '#000000',
   gray100: '#F3F4F6',
   gray200: '#E5E7EB',
   gray300: '#D1D5DB',
@@ -14,4 +17,7 @@ export const colors = {
   gray500: '#6B7280',
   gray700: '#374151',
   gray900: '#111827',
+  open: '#10B981',
+  closed: '#EF4444',
+  shadow: 'rgba(0, 0, 0, 0.08)',
 };

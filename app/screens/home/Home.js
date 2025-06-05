@@ -1,19 +1,12 @@
 /*eslint-disable*/
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  Animated,
-  Dimensions,
-} from 'react-native';
+import { SafeAreaView, ScrollView, Animated, Dimensions } from 'react-native';
 import { homeStyles } from './homeStyle';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
-import moment, { months } from 'moment-timezone';
+import { useSelector } from 'react-redux';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import moment from 'moment-timezone';
 import { findNextStoreOpening } from '../../utils/dateTimeUtils';
 import { processBusinessHours } from '../../utils/getTimeZoneHours';
-
-// Import components
 import HomeHeader from '../../components/HomeHeader'
 import GreetingCard from '../../components/GreetingCard';
 import DateTimeSelector from '../../components/DateTimeSelector';
@@ -23,48 +16,44 @@ import TimePickerModal from '../../components/TimePickerModal';
 import StoreStatusCard from '../../components/StoreStatusCard';
 import AnimatedTimezoneToggle from '../../components/AnimatedTimezoneToggle';
 import NextOpeningCard from '../../components/NextOpeningCard';
-
-// Import services
 import { fetchAllStoreData } from '../../services/api/storeService';
 import NotificationService from '../../services/NotificationService';
 
 const { height } = Dimensions.get('window');
 
-const HomeScreen = () => {
+const HomeScreen = ({route}) => {
   
   const name = useSelector((state) => state.user.name);
   const photo = useSelector((state) => state.user.photo);
   
  
   const navigation = useNavigation();
+  // const route=useRoute()
   
-  // Timezone state
+
   const [selectedTimezone, setSelectedTimezone] = useState('NYC');
-  
-  // Date and time selection
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   
-  // Modal visibility state
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   
-  // Store status and time state
   const [storeStatus, setStoreStatus] = useState('open');
   const [currentTime, setCurrentTime] = useState(new Date());
-  
-  // Animation references
+  const [timeZoneSelectedDate, settimeZoneSelectedDate] = useState({
+    timeZone: '',
+    date: "",
+    time: ""
+  })
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(height)).current;
   const toggleAnim = useRef(new Animated.Value(0)).current;
 
-  // Store data state
   const [storeHours, setStoreHours] = useState([]);
   const [storeOverrides, setStoreOverrides] = useState([]);
   const [localTimezoneHours, setLocalTimezoneHours] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Animation config
   const animationConfig = {
     spring: {
       tension: 100,
@@ -72,9 +61,7 @@ const HomeScreen = () => {
     },
   };
 
-  /**
-   * Fetch store hours and overrides from API
-   */
+
   useEffect(() => {
     const fetchStoreData = async () => {
       setLoading(true);
@@ -106,9 +93,7 @@ const HomeScreen = () => {
     fetchStoreData();
   }, []);
 
-  /**
-   * Update time every minute
-   */
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -116,6 +101,13 @@ const HomeScreen = () => {
 
     return () => clearInterval(timer);
   }, []);
+// Helper function to combine date and time with timezone support
+function combineDateAndTime(dateObj, timeString, timezone) {
+  const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+  const dateStr = moment(dateObj).format('YYYY-MM-DD');
+  return moment.tz(`${dateStr} ${timeString}`, 'YYYY-MM-DD HH:mm', tz);
+}
+
 
   /**
    * Handle timezone change
@@ -128,11 +120,42 @@ const HomeScreen = () => {
       useNativeDriver: false,
     }).start();
     
-    // Reset selections when timezone changes
-    setSelectedDate(null);
-    setSelectedTime(null);
+    // Convert date and time between timezones if available
+    if (selectedDate && selectedTime) {
+      // Store the current selection with timezone for future conversions
+      const oldTimezone = timeZoneSelectedDate.timeZone;
+      
+      // Always update our timeZoneSelectedDate with the latest selection and timezone
+      settimeZoneSelectedDate({
+        timeZone: selectedTimezone,
+        date: selectedDate.toISOString(),
+        time: selectedTime
+      });
+      
+      // Only perform conversion if we're switching timezones (not on first selection)
+      if (oldTimezone && oldTimezone !== selectedTimezone && oldTimezone !== '') {
+        try {
+          // Get timezone strings
+          const fromTzString = oldTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+          const toTzString = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+          
+          // Parse the date in the original timezone
+          const dateStr = moment(selectedDate).format('YYYY-MM-DD');
+          const originalDateTime = moment.tz(`${dateStr} ${selectedTime}`, 'YYYY-MM-DD HH:mm', fromTzString);
+          
+          // Convert to the new timezone
+          const convertedDateTime = originalDateTime.clone().tz(toTzString);
+          
+          // Update the UI with converted values
+          setSelectedDate(convertedDateTime.toDate());
+          setSelectedTime(convertedDateTime.format('HH:mm'));
+        } catch (error) {
+          console.error('Error converting timezone:', error);
+        }
+      }
+    }
     
-    // Re-process hours for the new timezone
+    // Process business hours for the selected timezone
     if (storeHours && storeHours.length > 0) {
       const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
       const processedHours = processBusinessHours(storeHours, userTimezone);
@@ -143,8 +166,10 @@ const HomeScreen = () => {
   /**
    * Update store status when date or time changes
    */
+  // Update store status when date or time changes
   useEffect(() => {
     if (selectedDate && selectedTime) {
+      // Update store status
       const isOpen = checkStoreStatus(selectedDate, selectedTime);
       setStoreStatus(isOpen ? 'open' : 'closed');
     }
@@ -192,7 +217,7 @@ const HomeScreen = () => {
       h => h.day_of_week === dayOfWeek && h.is_open
     );
     
-    // Store is closed on this day
+    
     if (!regularHours) {
       return false;
     }
@@ -200,9 +225,7 @@ const HomeScreen = () => {
     return isTimeWithinRange(nycTime, regularHours.start_time, regularHours.end_time);
   };
   
-  /**
-   * Check if a time is within a range
-   */
+
   const isTimeWithinRange = (time, startTime, endTime) => {
     if (!startTime || !endTime) return false;
     
@@ -218,9 +241,7 @@ const HomeScreen = () => {
     return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
   };
   
-  /**
-   * Generate dates for date picker
-   */
+ 
   const generateDates = () => {
     const dates = [];
     const tz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
@@ -232,10 +253,7 @@ const HomeScreen = () => {
     }
     return dates;
   };
-  
-  /**
-   * Generate time slots for the selected date
-   */
+
   const generateTimeSlots = (date) => {
     if (!date) return [];
     const slots = [];
@@ -249,16 +267,12 @@ const HomeScreen = () => {
     const dayOfWeek = momentDate.isoWeekday();
     const month = momentDate.month() + 1;
    
-   
-    // Find store hours for this day in the user's local timezone
     let localHours = localTimezoneHours.filter(
       h => h.day_of_week === dayOfWeek
     );
-    // console.log("date of selected date",momentDate.date())
     let hours=storeOverrides.filter(
       h => (h.day === momentDate.date()) && h.month === month&&!h.is_open
     );
-    // console.log("hours",hours)
     if(selectedTimezone!='NYC'){
       let hours1,hours2,hours3
         hours1=storeOverrides.filter(
@@ -279,7 +293,6 @@ const HomeScreen = () => {
       const day = hours[i].day;
       const month = hours[i].month;
 
-// Create a moment date from year, month, day
         const dateFromParts = moment().year(year).month(month - 1).date(day).tz(tz);
         const dayOfWeek1 = dateFromParts.isoWeekday();
         finalHours.push({
@@ -301,10 +314,6 @@ const HomeScreen = () => {
 
     }
 
-    
-    
-
-    // Generate all slots for the day (every 30 minutes)
     for (let hour = 0; hour < 24; hour++) {
       for (let minute of [0, 30]) {
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
@@ -417,7 +426,10 @@ const HomeScreen = () => {
         onProfilePress={() => navigation.navigate('Profile')} 
       />
 
-      <ScrollView style={homeStyles.homeContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={homeStyles.homeContent} 
+        contentContainerStyle={homeStyles.contentContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Timezone Toggle Component */}
         <AnimatedTimezoneToggle
           selectedTimezone={selectedTimezone}
@@ -471,6 +483,16 @@ const HomeScreen = () => {
           dates={generateDates()}
           onSelectDate={(date) => {
             setSelectedDate(date);
+            
+            // If we already have a time selected, update the combined timezone info
+            if (selectedTime) {
+              settimeZoneSelectedDate({
+                timeZone: selectedTimezone,
+                date: date.toISOString(),
+                time: selectedTime
+              });
+            }
+            
             hideModal('date');
             setTimeout(() => showModal('time'), 300);
           }}
@@ -491,6 +513,16 @@ const HomeScreen = () => {
           selectedTime={selectedTime}
           onSelectTime={(time) => {
             setSelectedTime(time);
+            
+            // Store timestamp of when the selection was made
+            const originalSelection = {
+              timeZone: selectedTimezone, 
+              date: selectedDate.toISOString(),
+              time: time
+            };
+            
+            // Update our timezone tracker
+            settimeZoneSelectedDate(originalSelection);
             hideModal('time');
           }}
         />

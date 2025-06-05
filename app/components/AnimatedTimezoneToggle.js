@@ -1,14 +1,9 @@
-/*eslint-disable*/
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { colors } from '../constants/colors';
 
-
 const { width } = Dimensions.get('window');
 
-/**
- * Timezone toggle component with animation
- */
 const TimezoneToggle = ({ 
   selectedTimezone, 
   setSelectedTimezone,
@@ -59,45 +54,46 @@ const TimezoneToggle = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 20,
+    shadowColor: colors.shadow,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 6,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.gray900,
-    marginBottom: 12,
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   toggleContainer: {
     flexDirection: 'row',
-    height: 44,
+    height: 50,
     backgroundColor: colors.gray100,
-    borderRadius: 22,
+    borderRadius: 25,
     position: 'relative',
     overflow: 'hidden',
   },
   toggleBackground: {
     position: 'absolute',
-    height: 40,
+    height: 46,
     width: '48%',
     top: 2,
     backgroundColor: colors.white,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
+    borderRadius: 23,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
   },
   toggleOption: {
     flex: 1,
@@ -106,12 +102,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   toggleOptionActive: {
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   toggleOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.gray800,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.gray700,
+    letterSpacing: -0.2,
   },
 });
 
