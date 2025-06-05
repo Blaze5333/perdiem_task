@@ -1,15 +1,8 @@
-/**
- * React Native App Component
- *
- * @format
- */
 /*eslint-disable*/
 import React,{useEffect} from 'react';
 import {
-  Alert,
   Platform,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
  
@@ -19,9 +12,7 @@ import {persistor, store} from './app/redux';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import messaging from '@react-native-firebase/messaging';
 import { setupNotifications } from './app/services/firebase/notification';
-import { firebase } from '@react-native-firebase/auth';
 function App() {
   GoogleSignin.configure({
     webClientId:"63655638444-tijb25e3vfm5fo0us9vpehvb72jq3os6.apps.googleusercontent.com",

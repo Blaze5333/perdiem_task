@@ -4,9 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import TimeSlotItem from './TimeSlotItem';
 import { colors } from '../constants/colors';
 
-/**
- * Modal content for time selection
- */
+
 const TimePickerModal = ({ 
   selectedDate, 
   timeSlots, 

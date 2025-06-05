@@ -5,9 +5,7 @@ import StoreStatusIndicator from './StoreStatusIndicator';
 import moment from 'moment-timezone';
 import { colors } from '../constants/colors';
 
-/**
- * Greeting and time card component
- */
+
 const GreetingCard = ({ selectedTimezone, currentTime,  }) => {
   // Get greeting message based on time of day
   const getGreeting = () => {

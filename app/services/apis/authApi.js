@@ -1,5 +1,6 @@
 /*eslint-disable */
 
+import { Alert } from "react-native";
 import client from "../../client";
 
 export const loginWithEmailPassword = async (email, password) => {
@@ -30,42 +31,79 @@ export const loginWithEmailPassword = async (email, password) => {
     }
 
     // If login failed, throw an error with the status
-    throw new Error('Login failed with status: ' + response.status);
+    Alert.alert(
+      'Login Failed',
+      response.data?.message || 'Login failed. Please try again.',
+      [{ text: 'OK' }],
+    );
 
   } catch (error) {
-    console.error('Login error:', error);
     
-    // Log more details about the error for debugging
-    if (error.response) {
-      console.error('Error response status:', error.response.status);
-      console.error('Error response headers:', error.response.headers);
-      console.error('Error response data:', error.response.data);
-    }
-    
-    // Handle specific error status codes
     if (error.response) {
       const { status } = error.response;
       
       switch (status) {
         case 400:
-          throw new Error('Invalid email or password format. Please check your credentials.');
+          Alert.alert(
+            'Login Failed',
+            'Please check your email and password.',
+            [{ text: 'OK' }],
+          );
+          break;
         case 401:
-          throw new Error('Invalid credentials. Please check your email and password.');
+          Alert.alert(
+            'Login Failed',
+            'Invalid credentials. Please check your email and password.',
+            [{ text: 'OK' }],
+          );
+          break;
         case 403:
-          throw new Error('Access denied. You may not have permission to log in.');
+          Alert.alert(
+            'Login Failed',
+            'Access denied. You may not have permission to log in.',
+            [{ text: 'OK' }],
+          );
+          break;
         case 404:
-          throw new Error('Account not found. Please sign up or check your credentials.');
+          Alert.alert(
+            'Login Failed',
+            'Account not found. Please sign up or check your credentials.',
+            [{ text: 'OK' }],
+          );
+          break;
         case 429:
-          throw new Error('Too many login attempts. Please try again later.');
+          Alert.alert(
+            'Login Failed',
+            'Too many login attempts. Please try again later.',
+            [{ text: 'OK' }],
+          );
+          break;
         case 500:
-          throw new Error('Server error. Please try again later.');
+          Alert.alert(
+            'Login Failed',
+            'Server error. Please try again later.',
+            [{ text: 'OK' }],
+          );
+          break
         default:
-          throw new Error(error.response.data?.message || 'Login failed. Please try again.');
+          Alert.alert(
+            'Login Failed',
+            error.response.data?.message || 'Login failed. Please try again.',
+            [{ text: 'OK' }],
+          );
       }
     } else if (error.request) {
-      throw new Error('Network error. Please check your connection and try again.');
+      Alert.alert(
+        'Login Failed',
+        'Network error. Please check your connection and try again.',
+        [{ text: 'OK' }],
+      );
     } else {
-      throw new Error('Login process failed. Please try again later.');
+      Alert.alert(
+        'Login Failed',
+        'Login process failed. Please try again later.',
+        [{ text: 'OK' }],
+      );
     }
   }
 };

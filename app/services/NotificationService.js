@@ -42,21 +42,18 @@ class NotificationService {
       
       // Calculate time for notification (1 hour before opening)
       const openingTime = moment(nextOpening.date);
-    //   const notificationTime = openingTime.clone().subtract(1, 'hour');
+      const notificationTime = openingTime.clone().subtract(1, 'hour');
       const currentTime=moment()
       //for testing purposes
-      // Set notification time to 1 minute from now
-      const notificationTime=currentTime.clone().add(1,'minute')
      
-      // Check if the notification time is in the past
-    //   if (notificationTime.isBefore(moment())) {
-    //     Alert.alert(
-    //       'Cannot Schedule Notification',
-    //       'The notification time is in the past.',
-    //       [{ text: 'OK' }]
-    //     );
-    //     return false;
-    //   }
+      if (notificationTime.isBefore(moment())) {
+        Alert.alert(
+          'Cannot Schedule Notification',
+          'The notification time is in the past.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
       
       // Get the timestamp in milliseconds
       const notificationTimestamp = notificationTime.valueOf();

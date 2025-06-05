@@ -3,10 +3,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 
-/**
- * Store status indicator component
- * Shows open/closed status with a green/red dot
- */
 const StoreStatusIndicator = ({ isOpen }) => {
   return (
     <View style={styles.container}>

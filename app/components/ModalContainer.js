@@ -2,9 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Animated } from 'react-native';
 import { colors } from '../constants/colors';
-/**
- * Reusable modal container component
- */
+
 const ModalContainer = ({ 
   visible, 
   onClose, 

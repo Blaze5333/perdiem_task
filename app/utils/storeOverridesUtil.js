@@ -1,25 +1,13 @@
 /*eslint-disable*/
 import moment from 'moment-timezone';
 
-/**
- * Check if a given date has a store override
- * @param {Array} overrides - List of store overrides from API
- * @param {Number} day - Day of month (1-31)
- * @param {Number} month - Month (1-12)
- * @returns {Object|null} - The override object if found, null otherwise
- */
+
 export const getOverrideForDate = (overrides, day, month) => {
   if (!overrides || !Array.isArray(overrides)) return null;
   
   return overrides.find(o => o.day === day && o.month === month) || null;
 };
 
-/**
- * Process store overrides - converts NYC timezone overrides to local timezone
- * @param {Array} overrides - List of store overrides from API
- * @param {String} targetTimezone - Target timezone to convert to
- * @returns {Array} - Converted overrides
- */
 export const processStoreOverrides = (overrides, targetTimezone) => {
   if (!overrides || overrides.length === 0) return [];
   const nycTz = 'America/New_York';
@@ -64,12 +52,7 @@ export const processStoreOverrides = (overrides, targetTimezone) => {
   });
 };
 
-/**
- * Check if a given date is a holiday or special closure
- * @param {Array} overrides - List of store overrides
- * @param {Date} date - The date to check
- * @returns {Boolean} - True if the date is a holiday/special closure
- */
+
 export const isHolidayOrSpecialClosure = (overrides, date) => {
   if (!overrides || !overrides.length || !date) return false;
   
@@ -85,15 +68,7 @@ export const isHolidayOrSpecialClosure = (overrides, date) => {
   return override && !override.is_open;
 };
 
-/**
- * Check if store is open for a specific date and time considering overrides
- * @param {Array} regularHours - Regular store hours
- * @param {Array} overrides - Store overrides
- * @param {Date} date - Date to check
- * @param {String} time - Time to check in HH:MM format
- * @param {String} timezone - User's timezone
- * @returns {Boolean} - True if store is open
- */
+
 export const isStoreOpenWithOverrides = (regularHours, overrides, date, time, timezone) => {
   if (!regularHours || !regularHours.length || !date || !time) return false;
   

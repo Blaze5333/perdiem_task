@@ -1,12 +1,7 @@
-/*eslint-disable no-unused-vars*/
+/*eslint-disable*/
 import moment from 'moment-timezone';
 
-/**
- * Generate an array of dates for the next n days
- * @param {number} numberOfDays - Number of days to generate
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @returns {Array} Array of date objects
- */
+
 export const generateDates = (numberOfDays = 30, timezone = 'local') => {
   const dates = [];
   const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
@@ -20,14 +15,7 @@ export const generateDates = (numberOfDays = 30, timezone = 'local') => {
   return dates;
 };
 
-/**
- * Generate time slots in 15-minute intervals
- * @param {Date} date - The date to generate time slots for
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @param {Array} storeHours - Store hours data
- * @param {Array} storeOverrides - Store hours override data
- * @returns {Array} Array of time slot objects
- */
+
 export const generateTimeSlots = (date, timezone, storeHours, storeOverrides) => {
   if (!date || !storeHours) return [];
   
@@ -90,15 +78,7 @@ export const generateTimeSlots = (date, timezone, storeHours, storeOverrides) =>
   return slots;
 };
 
-/**
- * Check if the store is open at a specific date and time
- * @param {Date} date - The date to check
- * @param {string} time - The time to check (format: "HH:MM")
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @param {Array} storeHours - Store hours data
- * @param {Array} storeOverrides - Store hours override data
- * @returns {boolean} True if store is open, false otherwise
- */
+
 export const isStoreOpen = (date, time, timezone, storeHours, storeOverrides) => {
   if (!date || !time || !storeHours) return false;
   
@@ -140,13 +120,7 @@ export const isStoreOpen = (date, time, timezone, storeHours, storeOverrides) =>
   return isTimeWithinRange(time, regularHours.start_time, regularHours.end_time);
 };
 
-/**
- * Check if a time is within a start and end range
- * @param {string} time - Time to check in "HH:MM" format
- * @param {string} startTime - Start time in "HH:MM" format
- * @param {string} endTime - End time in "HH:MM" format
- * @returns {boolean} True if time is within range
- */
+
 const isTimeWithinRange = (time, startTime, endTime) => {
   const [hour, minute] = time.split(':').map(Number);
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -160,12 +134,7 @@ const isTimeWithinRange = (time, startTime, endTime) => {
   return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
 };
 
-/**
- * Format a date for display
- * @param {Date} date - The date to format
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @returns {string} Formatted date string
- */
+
 export const formatDate = (date, timezone = 'local') => {
   if (!date) return '';
   
@@ -173,23 +142,12 @@ export const formatDate = (date, timezone = 'local') => {
   return moment(date).tz(tz).format('ddd, MMM D');
 };
 
-/**
- * Get the current time in the specified timezone
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @returns {Date} Current time as Date object
- */
+
 export const getCurrentTime = (timezone = 'local') => {
   const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
   return moment().tz(tz).toDate();
 };
 
-/**
- * Find the next time the store will be open
- * @param {Array} storeHours - Array of store hour objects
- * @param {Array} storeOverrides - Array of store override objects
- * @param {string} timezone - User's timezone ('NYC' or 'local')
- * @returns {Object} - Object with next opening date, time and formatted string
- */
 export const findNextStoreOpening = (storeHours, storeOverrides, timezone) => {
   if (!storeHours || storeHours.length === 0) {
     return null;

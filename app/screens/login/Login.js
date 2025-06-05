@@ -7,7 +7,7 @@ import {
   TextInput,
   SafeAreaView,
   Animated,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { loginStyles } from './loginStyle';
 import { colors } from '../../constants/colors';
@@ -19,8 +19,7 @@ import { setName, setPhoto, setEmail, setToken, setUserId } from '../../redux/us
 import { useNavigation } from '@react-navigation/native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { loginWithEmailPassword } from '../../services/apis/authApi';
-import client from '../../client';
-// Color palette
+
 
 
 const animationConfig = {
@@ -82,15 +81,8 @@ const LoginScreen = ({ onLogin }) => {
     try {
       setIsLoading(true);
       
-    
-      
-      // Call our authApi login function
-      
       const result = await loginWithEmailPassword(email, password);
       
-     
-      
-      // Update Redux with user data
       if (result) {
         dispatch(setEmail(result?.user?.email || email));
         dispatch(setName(result?.user?.name || "User"));
@@ -100,7 +92,7 @@ const LoginScreen = ({ onLogin }) => {
         navigation.navigate('Home');
       } else {
         // Handle unexpected response format
-        throw new Error('Invalid response from server');
+        return;
       }
     } catch (error) {
       console.error('Login error:', error);

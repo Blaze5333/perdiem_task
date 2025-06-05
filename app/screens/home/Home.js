@@ -1,9 +1,9 @@
 /*eslint-disable*/
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, ScrollView, Animated, Dimensions } from 'react-native';
+import { SafeAreaView, ScrollView, Animated, Dimensions, Text, View, Platform, Alert } from 'react-native';
 import { homeStyles } from './homeStyle';
 import { useSelector } from 'react-redux';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import moment from 'moment-timezone';
 import { findNextStoreOpening } from '../../utils/dateTimeUtils';
 import { processBusinessHours } from '../../utils/getTimeZoneHours';
@@ -16,7 +16,8 @@ import TimePickerModal from '../../components/TimePickerModal';
 import StoreStatusCard from '../../components/StoreStatusCard';
 import AnimatedTimezoneToggle from '../../components/AnimatedTimezoneToggle';
 import NextOpeningCard from '../../components/NextOpeningCard';
-import { fetchAllStoreData } from '../../services/api/storeService';
+import RefreshButton from '../../components/RefreshButton';
+import { fetchAllStoreData } from '../../services/apis/storeService';
 import NotificationService from '../../services/NotificationService';
 
 const { height } = Dimensions.get('window');
@@ -62,34 +63,37 @@ const HomeScreen = ({route}) => {
   };
 
 
+  const fetchStoreData = async () => {
+    setLoading(true);
+    try {
+      // Use the storeService to fetch store data
+      const { storeHours: hours, storeOverrides: overrides } = await fetchAllStoreData();
+      
+      // Add test override for June 7th
+      const updatedOverrides = [...(overrides || [])];
+      updatedOverrides.push({
+          id: 'default',
+          day: 7,
+          month: 6,
+          is_open: false
+      });
+      
+      // Process hours for local timezone
+      const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
+      const localTimeZoneHours = processBusinessHours(hours, userTimezone);
+      
+      setStoreHours(hours || []); 
+      setStoreOverrides(updatedOverrides || []);
+      setLocalTimezoneHours(localTimeZoneHours || []);
+    } catch (error) {
+      console.error('Error fetching store data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Load store data on initial mount
   useEffect(() => {
-    const fetchStoreData = async () => {
-      setLoading(true);
-      try {
-        // Use the storeService to fetch store data
-        const { storeHours: hours, storeOverrides: overrides } = await fetchAllStoreData();
-       
-        overrides.push({
-            id: 'default',
-            day:7,
-            month:6,
-            is_open:false
-        })
-        
-        // Process hours for local timezone
-        const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
-        const localTimeZoneHours = processBusinessHours(hours, userTimezone);
-        
-        setStoreHours(hours || []); 
-        setStoreOverrides(overrides || []);
-        setLocalTimezoneHours(localTimeZoneHours || []); 
-      } catch (error) {
-        console.error('Error fetching store data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchStoreData();
   }, []);
 
@@ -252,6 +256,11 @@ function combineDateAndTime(dateObj, timeString, timezone) {
       dates.push(date);
     }
     return dates;
+  };
+  
+  // Function to check if date selection and modals should be enabled
+  const isDataAvailable = () => {
+    return storeHours && storeHours.length > 0 && storeOverrides && storeOverrides.length > 0;
   };
 
   const generateTimeSlots = (date) => {
@@ -416,6 +425,9 @@ function combineDateAndTime(dateObj, timeString, timezone) {
     NotificationService.scheduleStoreOpeningNotification(nextOpeningInfo);
   };
 
+  // Check if we have valid store data
+  const hasValidStoreData = storeHours && storeHours.length > 0 && storeOverrides && storeOverrides.length > 0;
+
   return (
     <SafeAreaView style={homeStyles.container}>
       {/* Header Component */}
@@ -440,34 +452,62 @@ function combineDateAndTime(dateObj, timeString, timezone) {
         <GreetingCard
           selectedTimezone={selectedTimezone}
           currentTime={currentTime}
-          isStoreOpen={checkStoreStatus(new Date(), moment().format('HH:mm'))}
+          isStoreOpen={hasValidStoreData ? checkStoreStatus(new Date(), moment().format('HH:mm')) : false}
           loading={loading}
         />
 
-        {/* Next Store Opening Card - only shown for local timezone */}
-        {selectedTimezone !== 'NYC' && (
-          <NextOpeningCard
-            nextOpening={getNextStoreOpening()}
-            onPressNotify={handleNotificationSetup}
-            selectedTimezone={selectedTimezone}
-          />
-        )}
+        {/* If we don't have valid store data, show a refresh button */}
+        {!hasValidStoreData && !loading ? (
+          <View style={homeStyles.noDataContainer}>
+            <Text style={homeStyles.noDataText}>No store hour data available</Text>
+            <RefreshButton 
+              onPress={fetchStoreData}
+              loading={loading}
+              text="Refresh Data"
+            />
+          </View>
+        ) : (
+          <>
+            {/* Next Store Opening Card - only shown for local timezone */}
+            {selectedTimezone !== 'NYC' && (
+              <NextOpeningCard
+                nextOpening={getNextStoreOpening()}
+                onPressNotify={
+                  ()=>{
+                    if(Platform.OS=="ios"){
+                      Alert.alert(
+                        'Notification Setup',
+                        'Notification is not implemented for iOS yet as it requires apple developer account. Please check your Android device.',
+                        [
+                          { text: 'OK', onPress: () => {} }
+                        ]
+                      );
+                      return
+                    }
+                    handleNotificationSetup()
+                  }
+                  }
+                selectedTimezone={selectedTimezone}
+              />
+            )}
 
-        {/* Store Status Component - shows only when date/time selected */}
-        {selectedDate && selectedTime && (
-          <StoreStatusCard
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            storeStatus={storeStatus}
-            nextOpening={getNextStoreOpening()}
-          />
-        )}
+            {/* Store Status Component - shows only when date/time selected */}
+            {selectedDate && selectedTime && (
+              <StoreStatusCard
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                storeStatus={storeStatus}
+                nextOpening={getNextStoreOpening()}
+              />
+            )}
 
-        {/* Date Time Selection Component */}
-        <DateTimeSelector
-          selectedDate={selectedDate}
-          onPress={() => showModal('date')}
-        />
+            {/* Date Time Selection Component */}
+            <DateTimeSelector
+              selectedDate={selectedDate}
+              onPress={() => isDataAvailable() && showModal('date')}
+            />
+          </>
+        )}
       </ScrollView>
 
       {/* Date Picker Modal */}

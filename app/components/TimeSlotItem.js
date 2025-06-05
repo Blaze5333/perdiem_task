@@ -6,13 +6,7 @@ import { colors } from '../constants/colors';
 
 const { width } = Dimensions.get('window');
 
-/**
- * TimeSlotItem component for displaying a single time slot
- * @param {Object} props - Component props
- * @param {Object} props.slot - The time slot data
- * @param {string} props.selectedTime - Currently selected time
- * @param {Function} props.onPress - Function to call when the time slot is pressed
- */
+
 const TimeSlotItem = ({ slot, selectedTime, onPress }) => {
   return (
     <TouchableOpacity

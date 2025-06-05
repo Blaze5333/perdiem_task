@@ -3,9 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { colors } from '../constants/colors';
 
-/**
- * Component to display next opening time when the store is closed
- */
+
 const NextOpeningInfo = ({ nextOpening }) => {
   if (!nextOpening) return null;
   
@@ -21,14 +19,7 @@ const NextOpeningInfo = ({ nextOpening }) => {
   );
 };
 
-/**
- * StoreStatusCard component showing appointment status
- * @param {Object} props - Component props
- * @param {Date} props.selectedDate - Selected date
- * @param {string} props.selectedTime - Selected time
- * @param {string} props.storeStatus - Store status ('open' or 'closed')
- * @param {Object} props.nextOpening - Next opening time information
- */
+
 const StoreStatusCard = ({ selectedDate, selectedTime, storeStatus, nextOpening }) => {
   if (!selectedDate || !selectedTime) return null;
   

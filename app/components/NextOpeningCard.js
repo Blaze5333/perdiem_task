@@ -1,19 +1,10 @@
-/*eslint-disable react/prop-types, react/style-prop-object */
+/*eslint-disable  */
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 
-/**
- * NextOpeningCard component for displaying the next store opening time
- * with a notification button
- * 
- * @param {Object} props - Component props
- * @param {Object} props.nextOpening - Next opening time information object
- * @param {Function} props.onPressNotify - Function to handle notification setup
- * @param {string} props.selectedTimezone - Selected timezone ('NYC' or 'local')
- */
+
 const NextOpeningCard = ({ nextOpening, onPressNotify, selectedTimezone }) => {
-  // Only show the notification card if we have next opening info and it's local timezone
   if (!nextOpening || selectedTimezone === 'NYC') return null;
   
   const handleNotifyPress = () => {

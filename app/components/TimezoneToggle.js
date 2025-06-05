@@ -3,10 +3,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { colors } from '../../constants/colors';
 
-/**
- * Timezone toggle component
- * Allows switching between NYC and local timezone
- */
 const TimezoneToggle = ({ selectedTimezone, onToggle, toggleAnim }) => {
   return (
     <View style={styles.container}>

@@ -87,6 +87,27 @@ export const homeStyles = StyleSheet.create({
   contentContainer: {
     paddingBottom: 40,
   },
+  noDataContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    marginHorizontal: 16,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.gray700,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   card: {
     backgroundColor: colors.white,
     borderRadius: 20,

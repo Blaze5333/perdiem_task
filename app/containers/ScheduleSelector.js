@@ -15,10 +15,7 @@ import {
   fetchStoreOverrides 
 } from '../../services/apis/storeApi';
 
-/**
- * Schedule selector container component
- * Handles the logic for date and time selection and store hours
- */
+
 const ScheduleSelector = ({ selectedTimezone, onScheduleSelected }) => {
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);

@@ -1,13 +1,6 @@
 /*eslint-disable*/
 import moment from 'moment-timezone';
 
-/**
- * Check if a time is within a start and end range
- * @param {string} time - Time to check in "HH:MM" format
- * @param {string} startTime - Start time in "HH:MM" format
- * @param {string} endTime - End time in "HH:MM" format
- * @returns {boolean} True if time is within range
- */
 export const isTimeWithinRange = (time, startTime, endTime) => {
   if (!startTime || !endTime) return false;
   
@@ -23,12 +16,7 @@ export const isTimeWithinRange = (time, startTime, endTime) => {
   return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
 };
 
-/**
- * Check if a specific time slot is within store hours
- * @param {string} timeString - Time in format "HH:MM"
- * @param {Array} hoursForDay - Array of store hours for this day
- * @returns {boolean} - True if time is within any store hours range
- */
+
 export const isTimeSlotOpen = (timeString, hoursForDay) => {
   if (!hoursForDay || hoursForDay.length === 0) return false;
   
@@ -48,13 +36,7 @@ export const isTimeSlotOpen = (timeString, hoursForDay) => {
   });
 };
 
-/**
- * Generate all time slots for a given date (in 30-minute increments)
- * @param {Date} date - The date to generate time slots for
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @param {Array} localTimezoneHours - Store hours converted to local timezone
- * @returns {Array} - Array of time slot objects with open/closed status
- */
+
 export const generateTimeSlots = (date, timezone, localTimezoneHours) => {
   if (!date) return [];
   
@@ -91,11 +73,7 @@ export const generateTimeSlots = (date, timezone, localTimezoneHours) => {
   return slots;
 };
 
-/**
- * Get greeting message based on the time of day
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @returns {string} - Appropriate greeting message
- */
+
 export const getGreeting = (timezone) => {
   const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
   const now = moment().tz(tz);
@@ -112,12 +90,7 @@ export const getGreeting = (timezone) => {
   return `${timeGreeting}, ${location}!`;
 };
 
-/**
- * Generate dates for the next n days in the selected timezone
- * @param {string} timezone - Timezone to use ('NYC' or 'local')
- * @param {number} days - Number of days to generate
- * @returns {Array} - Array of Date objects
- */
+
 export const generateDates = (timezone, days = 30) => {
   const dates = [];
   const tz = timezone === 'NYC' ? 'America/New_York' : moment.tz.guess();

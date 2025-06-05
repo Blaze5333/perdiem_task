@@ -3,10 +3,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { colors } from '../constants/colors';
 
-
-/**
- * Date item component for date selection
- */
 const DateItem = ({ date, onSelect, isToday, isTomorrow }) => {
   return (
     <TouchableOpacity
@@ -33,9 +29,7 @@ const DateItem = ({ date, onSelect, isToday, isTomorrow }) => {
   );
 };
 
-/**
- * DatePicker modal content
- */
+
 const DatePickerModal = ({ dates, onSelectDate }) => {
   return (
     <ScrollView style={styles.modalScroll}>

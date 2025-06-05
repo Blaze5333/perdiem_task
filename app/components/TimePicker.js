@@ -3,9 +3,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { colors } from '../../constants/colors';
 
-/**
- * Time slot selector component
- */
 const TimePicker = ({ timeSlots, selectedTime, onSelectTime }) => {
   if (!timeSlots || timeSlots.length === 0) {
     return (

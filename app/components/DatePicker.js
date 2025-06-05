@@ -4,9 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { colors } from '../../constants/colors';
 import { formatDate } from '../../utils/dateTimeUtils';
 
-/**
- * Date selector component that renders a horizontal list of dates
- */
+
 const DatePicker = ({ dates, selectedDate, onSelectDate, timezone }) => {
   return (
     <View style={styles.container}>

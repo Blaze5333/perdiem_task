@@ -3,9 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 
-/**
- * Home screen header with profile image
- */
+
 const HomeHeader = ({ name, photo, onProfilePress }) => {
   const firstName = name ? name.split(' ')[0] : 'User';
   

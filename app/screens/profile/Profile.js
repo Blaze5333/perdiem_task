@@ -49,7 +49,6 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* {isLoading && <LoadingOverlay />} */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
