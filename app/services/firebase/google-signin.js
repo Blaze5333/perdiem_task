@@ -2,6 +2,8 @@
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import { unregisterFCMToken } from './notification';
+import { Alert, Platform } from 'react-native';
+import { getApp } from '@react-native-firebase/app';
 
 
 export const signInWithGoogle = async () => {
@@ -9,32 +11,47 @@ export const signInWithGoogle = async () => {
     await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
     const {data} = await GoogleSignin.signIn();
     if (!data) {
-      throw new Error('Google Sign-In failed: No ID token received');
+     Alert.alert('Sign In Error', 'No data received from Google Sign-In');
+     return null;
     }
     const googleCredential = auth.GoogleAuthProvider.credential(data.idToken);
-    const userCredential = await auth().signInWithCredential(googleCredential);
+    const userCredential = await getApp().auth().signInWithCredential(googleCredential);
+    if (!userCredential || !userCredential?.user) {
+      Alert.alert('Sign In Error',"Please try again later");
+      return null;
+    }
     return userCredential.user;
   } catch (error) {
     console.error('Google Sign-In Error:', error);
 
     if (error.code === 'SIGN_IN_CANCELLED') {
-      throw new Error('Sign in was cancelled');
+      Alert.alert('Sign In Error', 'Sign in was cancelled');
     } else if (error.code === 'PLAY_SERVICES_NOT_AVAILABLE') {
-      throw new Error('Google Play Services is not available');
+      Alert.alert('Sign In Error', 'Google Play Services is not available');
     } else if (error.code === 'SIGN_IN_REQUIRED') {
-      throw new Error('Sign in is required');
+      Alert.alert('Sign In Error', 'Sign in is required');
+    } else {
+      Alert.alert('Sign In Error', error.message || 'An unknown error occurred');
+      return null;
     }
 
-    throw error;
+   
   }
 };
 
 export const signOut = async () => {
   try {
+    if(Platform.OS === 'ios'){
+      // For iOS, we can directly sign out from Firebase
+     return;
+    }
     await unregisterFCMToken();
 
       // First sign out from Firebase
-    await auth().signOut();
+      if(!getApp().auth().currentUser){
+        return;
+      }
+    await getApp().auth().signOut();
 
       // Check if user is signed in with Google
     // const isSignedIn = await GoogleSignin.isSignedIn();

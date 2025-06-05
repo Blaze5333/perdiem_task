@@ -2,6 +2,7 @@
 import messaging from '@react-native-firebase/messaging';
 import {PermissionsAndroid, Platform, Alert} from 'react-native';
 import {navigationRef} from '../../../navigation/RootNavigation';
+import { getApp } from '@react-native-firebase/app';
 
 export const requestUserPermission = async () => {
   try {
@@ -17,7 +18,7 @@ export const requestUserPermission = async () => {
 
 export const getFCMToken = async () => {
   try {
-    const token = await messaging().getToken();
+    const token = await getApp().messaging().getToken();
     console.log('FCM Token:', token);
     return token;
   } catch (error) {
@@ -28,7 +29,7 @@ export const getFCMToken = async () => {
 
 const handleNotification = async remoteMessage => {
   try {
-    console.log('Handling notification:', remoteMessage);
+  
     const message = remoteMessage?.data?.message;
 
     if (message) {
@@ -64,7 +65,7 @@ const handleNotification = async remoteMessage => {
            )
         } else {
             // If the app is not ready, store the intent for later
-            console.log('App is not ready, storing intent for later:', intent);
+         
             // You can implement a storage mechanism here if needed
         }
     }
@@ -76,14 +77,14 @@ const handleNotification = async remoteMessage => {
 export const setupNotifications = () => {
   try {
     // Background message handler
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('Background Message:', remoteMessage);
+    getApp().messaging().setBackgroundMessageHandler(async remoteMessage => {
+     
       await handleNotification(remoteMessage);
     });
 
     // Foreground message handler
-    const messageUnsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground Message:', remoteMessage);
+    const messageUnsubscribe = getApp().messaging().onMessage(async remoteMessage => {
+
       Alert.alert(
         remoteMessage.notification?.title || 'New Notification',
         remoteMessage.notification?.body,
@@ -102,10 +103,11 @@ export const setupNotifications = () => {
 
     // Handle notification open when app is in background/quit
     const notificationUnsubscribe =
-      messaging().onNotificationOpenedApp(handleNotification);
+      getApp().messaging().onNotificationOpenedApp(handleNotification);
 
     // Check if app was opened from a notification when app was quit
-    messaging()
+    getApp()
+      .messaging()
       .getInitialNotification()
       .then(remoteMessage => {
         if (remoteMessage) {
@@ -130,8 +132,8 @@ export const setupNotifications = () => {
 
 export const unregisterFCMToken = async () => {
   try {
-    await messaging().deleteToken();
-    console.log('FCM Token deleted successfully');
+    await getApp().messaging().deleteToken();
+   
   } catch (error) {
     console.error('Error deleting FCM token:', error);
   }

@@ -76,7 +76,7 @@ const ProfileScreen = () => {
         style={styles.logoutButton}
         onPress={handleLogout}
         disabled={isLoading}>
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.logoutText}>{isLoading ? 'Logging out...' : 'Logout'}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

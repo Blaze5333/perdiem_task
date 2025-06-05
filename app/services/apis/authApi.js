@@ -5,14 +5,8 @@ import client from "../../client";
 export const loginWithEmailPassword = async (email, password) => {
   try {
     // Make the API call to authenticate the user
-    console.log('Attempting to log in with email:', email);
-    console.log('API endpoint:', 'auth');
-    
-    // Log request data for debugging (hide full password)
-    console.log('Request data:', { 
-      email, 
-      password: password ? '***hidden***' : 'not provided' 
-    });
+   
+   
     
     // Make the API call with explicit headers
     const response = await client.post('auth', 
@@ -25,12 +19,11 @@ export const loginWithEmailPassword = async (email, password) => {
       }
     );
     
-    console.log('Login response status:', response.status);
-    console.log('Login response:', response.data);
+   
     
     // If successful (status 200), return the user data
     if (response.status === 200) {
-      console.log('Login successful:', response.data);
+     
       return {
         token: response.data.token || '',
       };

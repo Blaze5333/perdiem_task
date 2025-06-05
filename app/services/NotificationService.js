@@ -1,6 +1,6 @@
 /*eslint-disable*/
 import { Alert } from 'react-native';
-import firebase from '@react-native-firebase/app';
+import firebase, { getApp } from '@react-native-firebase/app';
 import messaging from '@react-native-firebase/messaging';
 import moment from 'moment-timezone';
 
@@ -9,7 +9,7 @@ class NotificationService {
 
   async requestPermissions() {
     try {
-      const authStatus = await messaging().requestPermission();
+      const authStatus = await getApp().messaging().requestPermission();
       const enabled =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
@@ -47,7 +47,7 @@ class NotificationService {
       //for testing purposes
       // Set notification time to 1 minute from now
       const notificationTime=currentTime.clone().add(1,'minute')
-       console.log("notification time",notificationTime.minute(),notificationTime.hour())
+     
       // Check if the notification time is in the past
     //   if (notificationTime.isBefore(moment())) {
     //     Alert.alert(
@@ -62,11 +62,11 @@ class NotificationService {
       const notificationTimestamp = notificationTime.valueOf();
       
       // Get Firebase Cloud Messaging token
-      const token = await messaging().getToken();
+      const token = await getApp().messaging().getToken();
       console.log('FCM Token:', token);
-      
-     
-      const messageId = await messaging().sendMessage({
+
+
+      const messageId = await getApp().messaging().sendMessage({
         token,
         data: {
           title: 'Store Opening Soon',

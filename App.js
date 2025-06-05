@@ -7,6 +7,7 @@
 import React,{useEffect} from 'react';
 import {
   Alert,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -28,16 +29,11 @@ function App() {
     offlineAccess: true,
     scopes: ['profile', 'email'],
   })
-  const getFCMToken = async () => {
-    try {
-      const token = await messaging().getToken();
-      console.log('FCM Token:', token);
-    } catch (error) {
-      console.error('Error getting FCM token:', error);
-    }
-  }
+ 
   useEffect(() => {
-    
+    if(Platform.OS=="ios"){
+      return;
+    }
      const cleanup=setupNotifications()
      return cleanup
   }, []);

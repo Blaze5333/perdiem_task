@@ -71,7 +71,7 @@ const HomeScreen = ({route}) => {
        
         overrides.push({
             id: 'default',
-            day:11,
+            day:7,
             month:6,
             is_open:false
         })
@@ -257,7 +257,6 @@ function combineDateAndTime(dateObj, timeString, timezone) {
   const generateTimeSlots = (date) => {
     if (!date) return [];
     const slots = [];
-    console.log("date", date);
     const tz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
     const momentDate = moment(date).tz(tz);
 

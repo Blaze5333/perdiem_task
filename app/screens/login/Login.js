@@ -34,7 +34,7 @@ const LoginScreen = ({ onLogin }) => {
   const [email, setemail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
-  
+  const [googleLoading, setGoogleLoading] = React.useState(false);
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -88,7 +88,7 @@ const LoginScreen = ({ onLogin }) => {
       
       const result = await loginWithEmailPassword(email, password);
       
-      console.log('Login successful:', result);
+     
       
       // Update Redux with user data
       if (result) {
@@ -129,32 +129,26 @@ const LoginScreen = ({ onLogin }) => {
   
   const handleGoogleSignIn = async () => {
     try {
-        await GoogleSignin.signOut() // Make sure to await this call
-        const user = await signInWithGoogle()
-        if (!user) {
-           showAlert({
-            title: 'Login Failed',
-            message: 'Unable to sign in with Google. Please try again.',
-            type: 'error',
-           })
-        }
-        else {
-            console.log('Google Sign-In successful:', user)
-            // First navigate to Home
-          
-       
-            if (user.email) dispatch(setEmail(user.email||""))
-            if (user.displayName) dispatch(setName(user.displayName||""))
-            if (user.photoURL) dispatch(setPhoto(user.photoURL||""))
+      setGoogleLoading(true);
+      await GoogleSignin.signOut(); // Make sure to await this call
+      const user = await signInWithGoogle();
+      if (!user) {
+        return;
+      } else {
+        if (user.email) dispatch(setEmail(user.email || ""));
+        if (user.displayName) dispatch(setName(user.displayName || ""));
+        if (user.photoURL) dispatch(setPhoto(user.photoURL || ""));
+        setGoogleLoading(false);
             navigation.navigate('Home');
         }
     } catch (error) {
-        console.error('Google Sign-In Error in component:', error)
-        showAlert({
-            title: 'Login Failed',
-            message: error.message || 'Unable to sign in with Google. Please try again.',
-            type: 'error',
-        })
+      showAlert({
+        title: 'Login Failed',
+        message: error.message || 'Unable to sign in with Google. Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -188,7 +182,7 @@ const LoginScreen = ({ onLogin }) => {
             activeOpacity={0.8}
           >
             <GoogleIcon style={loginStyles.googleIcon} />
-            <Text style={loginStyles.googleButtonText}>Continue with Google</Text>
+            <Text style={loginStyles.googleButtonText}>{googleLoading?"Loading...":"Continue with Google"}</Text>
           </TouchableOpacity>
 
           {/* Divider */}
