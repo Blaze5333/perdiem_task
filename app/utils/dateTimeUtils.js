@@ -212,24 +212,32 @@ export const findNextStoreOpening = (storeHours, storeOverrides, timezone) => {
     // Check for override first
     const override = storeOverrides?.find(o => o.day === day && o.month === month);
     
-    // If there's an override for this date and the store is open
-    if (override && override.is_open && override.start_time) {
-      // Parse the start time
-      const [startHour, startMin] = override.start_time.split(':').map(Number);
+    // If there's an override for this date
+    if (override) {
+      // If the override specifies the store is closed, skip this day entirely
+      if (!override.is_open) {
+        continue;
+      }
       
-      // Create a moment object for the opening time
-      const openingTime = checkDate.clone().hour(startHour).minute(startMin).second(0);
-      
-      // If this time is in the future
-      if (openingTime.isAfter(nowInNYC)) {
-        nextOpeningDate = openingTime.toDate();
-        nextOpeningTime = override.start_time;
-        nextOpeningFound = true;
-        break;
+      // Store is open with special hours
+      if (override.start_time) {
+        // Parse the start time
+        const [startHour, startMin] = override.start_time.split(':').map(Number);
+        
+        // Create a moment object for the opening time
+        const openingTime = checkDate.clone().hour(startHour).minute(startMin).second(0);
+        
+        // If this time is in the future
+        if (openingTime.isAfter(nowInNYC)) {
+          nextOpeningDate = openingTime.toDate();
+          nextOpeningTime = override.start_time;
+          nextOpeningFound = true;
+          break;
+        }
       }
     } 
     // No override, check regular hours
-    else if (!override) {
+    else {
       // Find regular hours for this day of week
       const regularHours = storeHours.find(h => h.day_of_week === dayOfWeek && h.is_open);
       

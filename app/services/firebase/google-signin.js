@@ -1,7 +1,7 @@
 /*eslint-disable*/
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {unregisterFCMToken} from '@services/notification';
+import { unregisterFCMToken } from './notification';
 
 
 export const signInWithGoogle = async () => {
@@ -33,14 +33,12 @@ export const signOut = async () => {
   try {
     await unregisterFCMToken();
 
-    // First sign out from Firebase
+      // First sign out from Firebase
     await auth().signOut();
 
-    // Check if user is signed in with Google
-    const isSignedIn = await GoogleSignin.isSignedIn();
-    if (isSignedIn) {
-      await GoogleSignin.signOut();
-    }
+      // Check if user is signed in with Google
+    // const isSignedIn = await GoogleSignin.isSignedIn();
+   await GoogleSignin.signOut();
   } catch (error) {
     console.error('Sign Out Error:', error);
     // Continue with sign out even if there's an error

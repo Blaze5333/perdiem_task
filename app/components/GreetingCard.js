@@ -8,7 +8,7 @@ import { colors } from '../constants/colors';
 /**
  * Greeting and time card component
  */
-const GreetingCard = ({ selectedTimezone, currentTime, isStoreOpen, loading }) => {
+const GreetingCard = ({ selectedTimezone, currentTime,  }) => {
   // Get greeting message based on time of day
   const getGreeting = () => {
     // Use moment to get the current time in the selected timezone
@@ -47,15 +47,7 @@ const GreetingCard = ({ selectedTimezone, currentTime, isStoreOpen, loading }) =
         </View>
         
         {/* Current Store Status */}
-        <View style={styles.storeStatus}>
-          <View style={[
-            styles.statusDot,
-            loading ? styles.loadingDot : (isStoreOpen ? styles.openIcon : styles.closedIcon)
-          ]} />
-          <Text style={styles.statusText}>
-            {loading ? 'Checking...' : (isStoreOpen ? 'NYC Store Open' : 'NYC Store Closed')}
-          </Text>
-        </View>
+        
       </View>
     </View>
   );

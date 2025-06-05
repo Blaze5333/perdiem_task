@@ -22,6 +22,7 @@ export const fetchStoreHours = async () => {
 export const fetchStoreOverrides = async () => {
   try {
     const response = await client.get('/store-overrides');
+    console.log('Store overrides fetched:', response.data.length)
     return response.data;
   } catch (error) {
     console.error('Error fetching store overrides:', error);

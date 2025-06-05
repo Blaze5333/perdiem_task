@@ -4,8 +4,9 @@
  * @format
  */
 /*eslint-disable*/
-import React from 'react';
+import React,{useEffect} from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -17,11 +18,24 @@ import {persistor, store} from './app/redux';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-
+import messaging from '@react-native-firebase/messaging';
+import { setupNotifications } from './app/services/firebase/notification';
 function App() {
   GoogleSignin.configure({
     webClientId:"63655638444-tijb25e3vfm5fo0us9vpehvb72jq3os6.apps.googleusercontent.com"
   })
+  const getFCMToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('FCM Token:', token);
+    } catch (error) {
+      console.error('Error getting FCM token:', error);
+    }
+  }
+  useEffect(() => {
+     const cleanup=setupNotifications()
+     return cleanup
+  }, []);
   return (
     <>
      <Provider store={store}>

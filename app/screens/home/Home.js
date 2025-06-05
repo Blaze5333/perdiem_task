@@ -9,12 +9,12 @@ import {
 import { homeStyles } from './homeStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
-import moment from 'moment-timezone';
+import moment, { months } from 'moment-timezone';
 import { findNextStoreOpening } from '../../utils/dateTimeUtils';
 import { processBusinessHours } from '../../utils/getTimeZoneHours';
 
 // Import components
-import HomeHeader from '../../components/HomeHeader';
+import HomeHeader from '../../components/HomeHeader'
 import GreetingCard from '../../components/GreetingCard';
 import DateTimeSelector from '../../components/DateTimeSelector';
 import ModalContainer from '../../components/ModalContainer';
@@ -22,22 +22,20 @@ import DatePickerModal from '../../components/DatePickerModal';
 import TimePickerModal from '../../components/TimePickerModal';
 import StoreStatusCard from '../../components/StoreStatusCard';
 import AnimatedTimezoneToggle from '../../components/AnimatedTimezoneToggle';
+import NextOpeningCard from '../../components/NextOpeningCard';
 
-// Import API services
+// Import services
 import { fetchAllStoreData } from '../../services/api/storeService';
+import NotificationService from '../../services/NotificationService';
 
 const { height } = Dimensions.get('window');
 
-/**
- * Home Screen Component
- * Main screen for displaying store hours and allowing users to check appointment availability
- */
 const HomeScreen = () => {
-  // User state from Redux
+  
   const name = useSelector((state) => state.user.name);
   const photo = useSelector((state) => state.user.photo);
   
-  // Navigation
+ 
   const navigation = useNavigation();
   
   // Timezone state
@@ -83,6 +81,13 @@ const HomeScreen = () => {
       try {
         // Use the storeService to fetch store data
         const { storeHours: hours, storeOverrides: overrides } = await fetchAllStoreData();
+       
+        overrides.push({
+            id: 'default',
+            day:11,
+            month:6,
+            is_open:false
+        })
         
         // Process hours for local timezone
         const userTimezone = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
@@ -222,9 +227,9 @@ const HomeScreen = () => {
     
     for (let i = 0; i < 30; i++) {
       const date = moment().tz(tz).add(i, 'days').toDate();
+     
       dates.push(date);
     }
-    
     return dates;
   };
   
@@ -233,19 +238,72 @@ const HomeScreen = () => {
    */
   const generateTimeSlots = (date) => {
     if (!date) return [];
-    
     const slots = [];
+    console.log("date", date);
     const tz = selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess();
     const momentDate = moment(date).tz(tz);
-    
+
+    const nextDay = momentDate.clone().add(1, 'day');
+     const previousDay = momentDate.clone().subtract(1, 'day');
     // Get day of week
     const dayOfWeek = momentDate.isoWeekday();
-    
+    const month = momentDate.month() + 1;
+   
+   
     // Find store hours for this day in the user's local timezone
-    const localHours = localTimezoneHours.filter(
+    let localHours = localTimezoneHours.filter(
       h => h.day_of_week === dayOfWeek
     );
+    // console.log("date of selected date",momentDate.date())
+    let hours=storeOverrides.filter(
+      h => (h.day === momentDate.date()) && h.month === month&&!h.is_open
+    );
+    // console.log("hours",hours)
+    if(selectedTimezone!='NYC'){
+      let hours1,hours2,hours3
+        hours1=storeOverrides.filter(
+          h => (h.day === momentDate.date()) && h.month === month && !h.is_open
+        );
+         hours2=storeOverrides.filter(
+          h => (h.day===previousDay.date()) && h.month === month && !h.is_open
+        );
+         hours3=storeOverrides.filter(
+          h => ((h.day===nextDay.date())) && h.month === month && !h.is_open
+        );
+        hours=[...hours1,...hours2,...hours3]
+    }
+    if(hours.length>0){
+      let finalHours=[]
+      for (let i=0;i<hours.length;i++){
+        const year = momentDate.year();
+      const day = hours[i].day;
+      const month = hours[i].month;
+
+// Create a moment date from year, month, day
+        const dateFromParts = moment().year(year).month(month - 1).date(day).tz(tz);
+        const dayOfWeek1 = dateFromParts.isoWeekday();
+        finalHours.push({
+           start_time:  "00:00",
+                end_time: "23:59",
+                is_open: true,
+                day_of_week: dayOfWeek1
+        })
+      }
+         let localTimeOverrideHours=processBusinessHours(finalHours, selectedTimezone === 'NYC' ? 'America/New_York' : moment.tz.guess());
+         localTimeOverrideHours = localTimeOverrideHours.filter(h => h.day_of_week === dayOfWeek);
+       localTimeOverrideHours.forEach((h1)=>{
+          localHours = localHours.filter(h => 
+           !isTimeWithinRange(h.start_time, h1.start_time, h1.end_time) &&
+           !isTimeWithinRange(h.end_time, h1.start_time, h1.end_time)
+         );
+       })
+        
+
+    }
+
     
+    
+
     // Generate all slots for the day (every 30 minutes)
     for (let hour = 0; hour < 24; hour++) {
       for (let minute of [0, 30]) {
@@ -267,13 +325,10 @@ const HomeScreen = () => {
     return slots;
   };
   
-  /**
-   * Check if a time slot is within store hours
-   */
+  
   const isTimeSlotOpen = (timeString, hoursForDay) => {
     if (!hoursForDay || hoursForDay.length === 0) return false;
     
-    // Convert time string to minutes for comparison
     const [hour, minute] = timeString.split(':').map(Number);
     const timeInMinutes = hour * 60 + minute;
     
@@ -289,9 +344,7 @@ const HomeScreen = () => {
     });
   };
 
-  /**
-   * Show modal with animation
-   */
+
   const showModal = (modalType) => {
     if (modalType === 'date') {
       setShowDatePicker(true);
@@ -313,9 +366,7 @@ const HomeScreen = () => {
     ]).start();
   };
 
-  /**
-   * Hide modal with animation
-   */
+ 
   const hideModal = (modalType) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -339,15 +390,22 @@ const HomeScreen = () => {
     });
   };
 
-  /**
-   * Get the next store opening time
-   */
   const getNextStoreOpening = () => {
     return findNextStoreOpening(
       storeHours,
       storeOverrides,
       selectedTimezone
     );
+  };
+
+  /**
+   * Handle notification setup when the user clicks the Notify Me button
+   */
+  const handleNotificationSetup = (nextOpeningInfo) => {
+    if (!nextOpeningInfo) return;
+    
+    // Schedule notification for one hour before opening time
+    NotificationService.scheduleStoreOpeningNotification(nextOpeningInfo);
   };
 
   return (
@@ -374,6 +432,15 @@ const HomeScreen = () => {
           isStoreOpen={checkStoreStatus(new Date(), moment().format('HH:mm'))}
           loading={loading}
         />
+
+        {/* Next Store Opening Card - only shown for local timezone */}
+        {selectedTimezone !== 'NYC' && (
+          <NextOpeningCard
+            nextOpening={getNextStoreOpening()}
+            onPressNotify={handleNotificationSetup}
+            selectedTimezone={selectedTimezone}
+          />
+        )}
 
         {/* Store Status Component - shows only when date/time selected */}
         {selectedDate && selectedTime && (
