@@ -208,4 +208,4 @@ The Home screen is the main interface of the app and includes several key compon
 
 ## Contact
 
-For any questions or support, please contact [your-email@example.com](mailto:mustafachaiwala2003@gmail.com)
+For any questions or support, please contact [mustafachaiwala2003@gmail.com](mailto:mustafachaiwala2003@gmail.com)
